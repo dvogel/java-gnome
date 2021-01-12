@@ -408,37 +408,6 @@ sub check_runtime (\$$$$) {
 	$$scalarref = "$program $args";
 }
 
-
-sub check_jni_header_generator(\$$$$) {
-	my $scalarref = $_[0];
-	my $item = $_[1];
-	my $program = $_[2];
-	my $args = $_[3];
-
-	chomp $program;
-	if ( ! -f "$program") {
-		$$scalarref = "";
-		return;
-	}
-
-	# appealing to my sense of economy, we only print something out if 
-	# it's there - that way we can list lots of options to check without
-	# cluttering things endlessly.
-	output " - ".$item;
-
-	if ( ! -x "$program") {
-		output "found but not executable\n";
-		$$scalarref = "";
-		return;
-	}
-
-	# FIXME do a test!
-
-	output "found\n";
-	$$scalarref = "$program $args";
-}
-
-
 # test for C compiler
 
 sub check_CC (\$$$$) {
@@ -1113,7 +1082,6 @@ my $gcjC;	# The moniker $gcjC refers to `gcj -C`
 my $kaffec;
 
 # tools we check at same time (not switchable)
-my $javah;
 my $jar;
 my $javadoc;
 
@@ -1139,25 +1107,17 @@ if ($os eq "gentoo") {
 	# The $vendor business is just some precision prettiness for the
 	# display.
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
 
 	if ($jdk_home) {
 		$javac_candidate = "$jdk_home/bin/javac";
-		$javah_candidate = "$jdk_home/bin/javah";
 		$jar_candidate = "$jdk_home/bin/jar";
 		$javadoc_candidate = "$jdk_home/bin/javadoc";
 		$vendor = "Specified";
 	} else {
 		$javac_candidate = `java-config --javac`;
-
-		$javah_candidate = `java-config -O`;
-		chomp $javah_candidate;
-		$javadoc_candidate = $javah_candidate;
-
-		$javah_candidate .= "/bin/javah";
 		$javadoc_candidate .= "/bin/javadoc";
 
 		$jar_candidate = `java-config --jar`;
@@ -1186,7 +1146,6 @@ if ($os eq "gentoo") {
 	check_compiler($gcjC, "GNU gcj -C (bytecode mode)", $gcj_candidate, "-C");
 
 	# check tools
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_javadoc($javadoc, "$vendor javadoc", $javadoc_candidate, "");
 
@@ -1202,20 +1161,17 @@ if ($os eq "gentoo") {
 	# selected in the alternatives system) by the user. In other words,
 	# javac -> /opt/sun-jdk-1.4.2.02/bin/javac, not javac -> kaffec.
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
 
 	if ($jdk_home) {
 		$javac_candidate = "$jdk_home/bin/javac";
-		$javah_candidate = "$jdk_home/bin/javah";
 		$jar_candidate = "$jdk_home/bin/jar";
 		$javadoc_candidate = "$jdk_home/bin/javadoc";
 		$vendor = "Specified";
 	} else {
 		$javac_candidate = which("javac");
-		$javah_candidate = "";
 		$jar_candidate = "";
 		$javadoc_candidate = "";
 		$vendor = "System";
@@ -1242,9 +1198,6 @@ if ($os eq "gentoo") {
 	check_compiler($kaffec, "Kaffe javac", "/usr/lib/kaffe/bin/javac", "");
 
 	# check for JDK tools. To suit Debian prejudices, use GNU tools if found.
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
-	check_jni_header_generator($javah, "GNU gcjh", which("gcjh"), "-jni") unless $javah;
-	check_jni_header_generator($javah, "System javah", which("javah"), "-jni") unless $javah;
 
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_jar($jar, "GNU fastjar", which("fastjar"), "") unless $jar;
@@ -1262,19 +1215,16 @@ if ($os eq "gentoo") {
 	check_compiler($ecj, "Eclipse ecj", which("ecj"), "-g -preserveAllLocals -nowarn -source 1.6 -target 1.6");
 
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
 	if ($jdk_home) {
 		$javac_candidate = "$jdk_home/bin/javac";
-		$javah_candidate = "$jdk_home/bin/javah";
 		$jar_candidate = "$jdk_home/bin/jar";
 		$javadoc_candidate = "$jdk_home/bin/javadoc";
 		$vendor = "Specified";
 	} else {
 		$javac_candidate = "/usr/bin/javac";
-		$javah_candidate = "/usr/bin/javah";
 		$jar_candidate = "/usr/bin/jar";
 		$javadoc_candidate = "/usr/bin/javadoc";
 		$vendor = "System Default";
@@ -1293,7 +1243,6 @@ if ($os eq "gentoo") {
 	# check for kaffe's compiler
 	check_compiler($kaffec, "Kaffe javac", which("kaffec"), "");
 
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_javadoc($javadoc, "$vendor javadoc", $javadoc_candidate, "");
 
@@ -1302,19 +1251,16 @@ if ($os eq "gentoo") {
 	check_compiler($ecj, "Eclipse ecj", which("ecj"), "-g -preserveAllLocals -nowarn -source 1.6 -target 1.6");
 
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
 	if ($jdk_home) {
 		$javac_candidate = "$jdk_home/bin/javac";
-		$javah_candidate = "$jdk_home/bin/javah";
 		$jar_candidate = "$jdk_home/bin/jar";
 		$javadoc_candidate = "$jdk_home/bin/javadoc";
 		$vendor = "Specified";
 	} else {
 		$javac_candidate = "/usr/lib/jvm/java/bin/javac";
-		$javah_candidate = "/usr/lib/jvm/java/bin/javah";
 		$jar_candidate = "/usr/lib/jvm/java/bin/jar";
 		$javadoc_candidate = "/usr/lib/jvm/java/bin/javadoc";
 		$vendor = "Sun";
@@ -1333,7 +1279,6 @@ if ($os eq "gentoo") {
 	# check for kaffe's compiler
 	check_compiler($kaffec, "Kaffe javac", which("kaffec"), "");
 
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_javadoc($javadoc, "$vendor javadoc", $javadoc_candidate, "");
 
@@ -1343,7 +1288,6 @@ if ($os eq "gentoo") {
 	# Should we just go with known paths, or...? `which` is so lame
 
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
@@ -1355,13 +1299,11 @@ if ($os eq "gentoo") {
 	}
 
 	$javac_candidate = "$jdk_home/bin/javac";
-	$javah_candidate = "$jdk_home/bin/javah";
 	$jar_candidate = "$jdk_home/bin/jar";
 	$javadoc_candidate = "$jdk_home/bin/javadoc";
 
 	check_compiler($javac, "$vendor javac", $javac_candidate, "-g");
 
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_javadoc($javadoc, "$vendor javadoc", $javadoc_candidate, "");
 
@@ -1370,20 +1312,17 @@ if ($os eq "gentoo") {
 	check_compiler($ecj, "Eclipse ecj", which("ecj"), "-g -preserveAllLocals -nowarn -source 1.6 -target 1.6");
 
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
 
 	if ($jdk_home) {
 		$javac_candidate = "$jdk_home/bin/javac";
-		$javah_candidate = "$jdk_home/bin/javah";
 		$jar_candidate = "$jdk_home/bin/jar";
 		$javadoc_candidate = "$jdk_home/bin/javadoc";
 		$vendor = "Specified";
 	} else {
 		$javac_candidate = which("javac");
-		$javah_candidate = which("javah");
 		$jar_candidate = which("jar");
 		$javadoc_candidate = which("javadoc");
 		$vendor = "System";
@@ -1391,7 +1330,6 @@ if ($os eq "gentoo") {
 
 	check_compiler($javac, "$vendor javac", $javac_candidate, "-g -source 1.6 -target 1.6");
 
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_javadoc($javadoc, "$vendor javadoc", $javadoc_candidate, "");
 
@@ -1399,19 +1337,16 @@ if ($os eq "gentoo") {
 	check_compiler($ecj, "Eclipse ecj", which("ecj"), "-g -preserveAllLocals -nowarn -source 1.6 -target 1.6");
 
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
 	if ($jdk_home) {
 		$javac_candidate = "$jdk_home/bin/javac";
-		$javah_candidate = "$jdk_home/bin/javah";
 		$jar_candidate = "$jdk_home/bin/jar";
 		$javadoc_candidate = "$jdk_home/bin/javadoc";
 		$vendor = "Specified";
 	} else {
 		$javac_candidate = "/usr/java/bin/javac";
-		$javah_candidate = "/usr/java/bin/javah";
 		$jar_candidate = "/usr/java/bin/jar";
 		$javadoc_candidate = "/usr/java/bin/javadoc";
 		$vendor = "Sun";
@@ -1430,7 +1365,6 @@ if ($os eq "gentoo") {
 	# check for kaffe's compiler
 	check_compiler($kaffec, "Kaffe javac", which("kaffec"), "");
 
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_javadoc($javadoc, "$vendor javadoc", $javadoc_candidate, "");
 
@@ -1442,19 +1376,16 @@ if ($os eq "gentoo") {
 	check_compiler($ecj, "Eclipse ecj", which("ecj"), "-g -preserveAllLocals -nowarn -source 1.6 -target 1.6");
 
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
 	if ($jdk_home) {
 		$javac_candidate = "$jdk_home/bin/javac";
-		$javah_candidate = "$jdk_home/bin/javah";
 		$jar_candidate = "$jdk_home/bin/jar";
 		$javadoc_candidate = "$jdk_home/bin/javadoc";
 		$vendor = "Specified";
 	} else {
 		$javac_candidate = "/usr/lib/java/bin/javac";
-		$javah_candidate = "/usr/lib/java/bin/javah";
 		$jar_candidate = "/usr/lib/java/bin/jar";
 		$javadoc_candidate = "/usr/lib/java/bin/javadoc";
 		$vendor = "Sun";
@@ -1473,7 +1404,6 @@ if ($os eq "gentoo") {
 	# check for kaffe's compiler
 	check_compiler($kaffec, "Kaffe javac", which("kaffec"), "");
 
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_javadoc($javadoc, "$vendor javadoc", $javadoc_candidate, "");
 
@@ -1482,19 +1412,16 @@ if ($os eq "gentoo") {
 	check_compiler($ecj, "Eclipse ecj", which("ecj"), "-g -preserveAllLocals -nowarn -source 1.6 -target 1.6");
 
 	my $javac_candidate;
-	my $javah_candidate;
 	my $jar_candidate;
 	my $javadoc_candidate;
 	my $vendor;
 	if ($jdk_home) {
 		$javac_candidate = "$jdk_home/bin/javac";
-		$javah_candidate = "$jdk_home/bin/javah";
 		$jar_candidate = "$jdk_home/bin/jar";
 		$javadoc_candidate = "$jdk_home/bin/javadoc";
 		$vendor = "Specified";
 	} else {
 		$javac_candidate = "/usr/bin/javac";
-		$javah_candidate = "/usr/bin/javah";
 		$jar_candidate = "/usr/bin/jar";
 		$javadoc_candidate = "/usr/bin/javadoc";
 		$vendor = "GNU Classpath";
@@ -1513,7 +1440,6 @@ if ($os eq "gentoo") {
 	# check for kaffe's compiler
 	check_compiler($kaffec, "Kaffe javac", which("kaffec"), "");
 
-	check_jni_header_generator($javah, "$vendor javah", $javah_candidate, "-jni");
 	check_jar($jar, "$vendor jar", $jar_candidate, "");
 	check_javadoc($javadoc, "$vendor javadoc", $javadoc_candidate, "");
 
@@ -2061,20 +1987,11 @@ if ($compiler eq "javac") {
 
 print CONFIG <<HERE ;
 
-# the JAVAH, JAR, and JAVADOC variables simply contains a usable jar
-# and javah executable, respectively, while the JAVAH_CMD, JAR_CMD,
-# and JAVADOC_CMD variables is for display purposes, matching the
-# pattern above.
+# the JAR, and JAVADOC variables simply contains a usable jar and executable,
+# respectively, while the JAR_CMD, and JAVADOC_CMD variables is for display
+# purposes, matching the pattern above.
 
 HERE
-
-
-if ($javah) {
-	print CONFIG "JAVAH=$javah\n";
-	print CONFIG "JAVAH_CMD=JAVAH    \n";
-} else {
-	bail "failed", "No JNI header generator detected.";
-}
 
 if ($jar) {
 	print CONFIG "JAR=$jar\n";
